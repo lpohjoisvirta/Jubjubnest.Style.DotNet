@@ -260,6 +260,24 @@ namespace Jubjubnest.Style.DotNet {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fix initializer list..
+        /// </summary>
+        internal static string InitializerListOwnLines_Message {
+            get {
+                return ResourceManager.GetString("InitializerListOwnLines_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The initializer list should either be on the same line or separated..
+        /// </summary>
+        internal static string InitializerListOwnLines_Title {
+            get {
+                return ResourceManager.GetString("InitializerListOwnLines_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string KeepLinesWithin120Characters_Description {

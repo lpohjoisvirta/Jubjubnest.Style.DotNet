@@ -379,6 +379,37 @@ namespace Jubjubnest.Style.DotNet.Test
 			VerifyCSharpDiagnostic( code.Code );
 		}
 
+		[TestMethod]
+		public void TestInitializerBracketsAreOnTheirOwnLines()
+		{
+			var code = Code.InMethod( @"
+				var ex = new Exception()
+				{
+					Source = ""Test"",
+					HelpLink = ""Test""
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code );
+		}
+
+		[TestMethod]
+		public void TestInitializerBracketsOnSameLine()
+		{
+			var code = Code.InMethod( @"
+				var ex = new Exception() { Source = ""Test"", HelpLink = ""Test"" }" );
+
+			VerifyCSharpDiagnostic( code.Code );
+		}
+
+		[TestMethod]
+		public void TestInitializerEndingBracketNextLine()
+		{
+			var code = Code.InMethod( @"
+				var ex = new Exception() {
+						Source = ""Test"", HelpLink = ""Test"" }" );
+			VerifyCSharpDiagnostic( code.Code, Warning( code, 2, 42, LineAnalyzer.InitializerListOwnLines ) );
+		}
+
 		protected override CodeFixProvider GetCSharpCodeFixProvider()
 		{
 			return new LineCodeFixProvider();

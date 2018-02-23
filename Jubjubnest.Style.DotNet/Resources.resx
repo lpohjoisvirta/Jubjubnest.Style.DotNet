@@ -474,4 +474,10 @@
   <data name="AttributesOnTheirOwnLines_Title" xml:space="preserve">
     <value>All attributes should be either on the same line or each on their own.</value>
   </data>
+  <data name="InitializerListOwnLines_Message" xml:space="preserve">
+    <value>Fix initializer list.</value>
+  </data>
+  <data name="InitializerListOwnLines_Title" xml:space="preserve">
+    <value>The initializer list should either be on the same line or separated.</value>
+  </data>
 </root>

@@ -63,6 +63,12 @@ namespace Jubjubnest.Style.DotNet
 				new RuleDescription( nameof( AttributesOnTheirOwnLines ), "Newlines" );
 
 		/// <summary>
+		/// Initializer lists should be either on one line, or all in their own lines.
+		/// </summary>
+		public static RuleDescription InitializerListOwnLines { get; } =
+				new RuleDescription( nameof( InitializerListOwnLines ), "Newlines" );
+
+		/// <summary>
 		/// Supported diagnostic rules.
 		/// </summary>
 		public override ImmutableArray< DiagnosticDescriptor > SupportedDiagnostics =>
@@ -76,7 +82,8 @@ namespace Jubjubnest.Style.DotNet
 					ParametersOnTheirOwnLines.Rule,
 					ClosingParameterParenthesesOnTheirOwnLines.Rule,
 					BaseConstructorCallSameLine.Rule,
-					AttributesOnTheirOwnLines.Rule );
+					AttributesOnTheirOwnLines.Rule,
+					InitializerListOwnLines.Rule );
 
 		/// <summary>
 		/// Initialize the analyzer.
@@ -98,7 +105,8 @@ namespace Jubjubnest.Style.DotNet
 					SyntaxKind.ThisConstructorInitializer );
 			context.RegisterSyntaxNodeAction( AnalyzeAttributeArgumentLists,
 					SyntaxKind.AttributeArgumentList );
-
+			context.RegisterSyntaxNodeAction( AnalyzeLocalDeclarationStatement,
+					SyntaxKind.LocalDeclarationStatement );
 		}
 
 		/// <summary>
@@ -271,7 +279,6 @@ namespace Jubjubnest.Style.DotNet
 			// Grab the block syntax node.
 			var construcotrInitializer = ( ConstructorInitializerSyntax )context.Node;
 			var constructor = ( ConstructorDeclarationSyntax ) construcotrInitializer.Parent;
-			var parameters = constructor.ParameterList.Parameters;
 
 			// If all the parameters are on the same line, allow the initializer be on its own line.
 			int expectedLineNumber;
@@ -367,6 +374,48 @@ namespace Jubjubnest.Style.DotNet
 				lineNumbersPerAttribute.Add( attributeLineNumber );
 			}
 		}
+
+		/// <summary>
+		/// Analyzes a local declaration statement.
+		/// </summary>
+		/// <param name="context">The context.</param>
+		private static void AnalyzeLocalDeclarationStatement( SyntaxNodeAnalysisContext context )
+		{
+			// Check that we got node that we should analyze.
+			var localDeclarationExpression = context.Node as LocalDeclarationStatementSyntax;
+			if( localDeclarationExpression == null )
+				return;
+			var innerObjectInitializers = localDeclarationExpression
+					.DescendantNodes().OfType<InitializerExpressionSyntax>().ToList();
+			if( innerObjectInitializers.Count != 1 )
+				return;
+
+			// Get the initializer for analysis.
+			var initializer = innerObjectInitializers.First();
+
+			// If the opening and endings braces are on the same line, we are okay.
+			if( initializer.OpenBraceToken.GetLocation().GetLineSpan().StartLinePosition.Line ==
+				initializer.CloseBraceToken.GetLocation().GetLineSpan().StartLinePosition.Line )
+				return;
+
+			// Check that the last braces are on different line than the last expression.
+			var lastExpression = initializer.Expressions.LastOrDefault();
+			if( lastExpression != null )
+			{
+				// Get the last expressions line.
+				var lastExpressionLine = lastExpression.GetLocation().GetLineSpan().EndLinePosition.Line;
+				var closeBraceLine = initializer.CloseBraceToken.GetLocation().GetLineSpan().EndLinePosition.Line;
+				if( lastExpressionLine == closeBraceLine )
+				{
+					// The last expression is on the same line as the closing bracket. Report diagnostic.
+					var diagnostic = Diagnostic.Create(
+							InitializerListOwnLines.Rule,
+							initializer.CloseBraceToken.GetLocation() );
+					context.ReportDiagnostic( diagnostic );
+				}
+			}
+		}
+
 
 		/// <summary>
 		/// Close brace validation regex.
