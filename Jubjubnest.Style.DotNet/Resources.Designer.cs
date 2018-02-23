@@ -20,7 +20,7 @@ namespace Jubjubnest.Style.DotNet {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -58,6 +58,24 @@ namespace Jubjubnest.Style.DotNet {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move attributes to the same line or their own lines..
+        /// </summary>
+        internal static string AttributesOnTheirOwnLines_Message {
+            get {
+                return ResourceManager.GetString("AttributesOnTheirOwnLines_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All attributes should be either on the same line or each on their own..
+        /// </summary>
+        internal static string AttributesOnTheirOwnLines_Title {
+            get {
+                return ResourceManager.GetString("AttributesOnTheirOwnLines_Title", resourceCulture);
             }
         }
         

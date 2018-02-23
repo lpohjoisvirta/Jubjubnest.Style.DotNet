@@ -57,6 +57,12 @@ namespace Jubjubnest.Style.DotNet
 				new RuleDescription( nameof( BaseConstructorCallSameLine ), "Newlines" );
 
 		/// <summary>
+		/// Attributes should be on their own lines, if separated by new lines at all.
+		/// </summary>
+		public static RuleDescription AttributesOnTheirOwnLines { get; } =
+				new RuleDescription( nameof( AttributesOnTheirOwnLines ), "Newlines" );
+
+		/// <summary>
 		/// Supported diagnostic rules.
 		/// </summary>
 		public override ImmutableArray< DiagnosticDescriptor > SupportedDiagnostics =>
@@ -69,7 +75,8 @@ namespace Jubjubnest.Style.DotNet
 					BracesOnTheirOwnLine.Rule,
 					ParametersOnTheirOwnLines.Rule,
 					ClosingParameterParenthesesOnTheirOwnLines.Rule,
-					BaseConstructorCallSameLine.Rule );
+					BaseConstructorCallSameLine.Rule,
+					AttributesOnTheirOwnLines.Rule );
 
 		/// <summary>
 		/// Initialize the analyzer.
@@ -89,6 +96,8 @@ namespace Jubjubnest.Style.DotNet
 					SyntaxKind.BaseConstructorInitializer );
 			context.RegisterSyntaxNodeAction( AnalyzeConstructorInitializers,
 					SyntaxKind.ThisConstructorInitializer );
+			context.RegisterSyntaxNodeAction( AnalyzeAttributeArgumentLists,
+					SyntaxKind.AttributeArgumentList );
 
 		}
 
@@ -289,6 +298,73 @@ namespace Jubjubnest.Style.DotNet
 						BaseConstructorCallSameLine.Rule,
 						construcotrInitializer.GetLocation() );
 				context.ReportDiagnostic( diagnostic );
+			}
+		}
+
+		/// <summary>
+		/// Analyses attributes.
+		/// </summary>
+		/// <param name="context">The context.</param>
+		private static void AnalyzeAttributeArgumentLists( SyntaxNodeAnalysisContext context )
+		{
+			// Get the attribute list.
+			var attributeList = ( AttributeArgumentListSyntax )context.Node;
+
+			// We have two acceptable situations for argument lists:
+			//  1) All the arguments are on the same line.
+			//  2) All the arguments are on their own lines.
+			List<int> lineNumbersPerAttribute = new List<int>();
+			for( int attributeIndex = 0; attributeIndex < attributeList.Arguments.Count; ++attributeIndex )
+			{
+				// Get the attribute.
+				var attribute = attributeList.Arguments[ attributeIndex ];
+
+				// Get the attribute line number.
+				int attributeLineNumber = attribute.GetLocation().GetLineSpan().EndLinePosition.Line;
+
+				// Start checking only from the second attribute, as the first one is always correct.
+				if( attributeIndex != 0 )
+				{
+					// Is the attribute on its own line, or on the same line as all the previous ones?
+					bool argumentOkay = false;
+					if( lineNumbersPerAttribute.All( existingLine => existingLine == attributeLineNumber ) )
+					{
+						// All attributes on the same line => Okay.
+						argumentOkay = true;
+					}
+					else
+					{
+						// The arguments should be on their own lines.
+
+						// Check if this attribute is on the next line than the previous one,
+						// and that all the previous attributes are also on their own lines.
+						bool previousLinesAreOkay = true;
+						for( int i = 1; i < lineNumbersPerAttribute.Count; ++i )
+							if( lineNumbersPerAttribute[ i ] != lineNumbersPerAttribute[ i - 1 ] + 1 )
+								previousLinesAreOkay = false;
+
+						// Check that the new attribute is own its line.
+						if( previousLinesAreOkay &&
+							lineNumbersPerAttribute.Last() + 1 == attributeLineNumber )
+						{
+							// This attribute is on the next line => Okay.
+							argumentOkay = true;
+						}
+					}
+
+					// Check if the checks went okay.
+					if( argumentOkay == false )
+					{
+						// Something wasn't as supposed. Report the results.
+						var diagnostic = Diagnostic.Create(
+								AttributesOnTheirOwnLines.Rule,
+								attribute.GetLocation() );
+						context.ReportDiagnostic( diagnostic );
+					}
+				}
+
+				// Add to the list.
+				lineNumbersPerAttribute.Add( attributeLineNumber );
 			}
 		}
 

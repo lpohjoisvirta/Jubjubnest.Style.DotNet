@@ -308,6 +308,77 @@ namespace Jubjubnest.Style.DotNet.Test
 			VerifyCSharpDiagnostic( code.Code );
 		}
 
+		[TestMethod]
+		public void TestAttributeParametersAreNotOnTheirOwnLines()
+		{
+			var code = Code.InClass( @"
+				[PrincipalPermission( Role = ""Administrators"",
+					Action = SecurityAction.Demand, Name = ""Something"" )]
+				public Test( int i )
+				{
+
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code, Warning( code, 2, 38, LineAnalyzer.AttributesOnTheirOwnLines ) );
+		}
+
+		[TestMethod]
+		public void TestAttributeParametersAreNotOnTheirOwnLines2()
+		{
+			var code = Code.InClass( @"
+				[PrincipalPermission( Role = ""Administrators"", Action = SecurityAction.Demand,
+					Name = ""Something"" )]
+				public Test( int i )
+				{
+
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code, Warning( code, 2, 6, LineAnalyzer.AttributesOnTheirOwnLines ) );
+		}
+
+
+		[TestMethod]
+		public void TestAttributeParametersAreOnSameLine()
+		{
+			var code = Code.InClass( @"
+				[Obsolete( Message = ""This constructor is obsolete."", IsError = true )]
+				public Test( int i )
+				{
+
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code );
+		}
+
+		[TestMethod]
+		public void TestAttributeParametersAreOnTheirOwnLines1()
+		{
+			var code = Code.InClass( @"
+				[Obsolete(
+					Message = ""This constructor is obsolete."",
+					IsError = true )]
+				public Test( int i )
+				{
+
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code );
+		}
+
+		[TestMethod]
+		public void TestAttributeParametersAreOnTheirOwnLines2()
+		{
+			var code = Code.InClass( @"
+				[Obsolete( Message = ""This constructor is obsolete."",
+					IsError = true )]
+				public Test( int i )
+				{
+
+				}" );
+
+			VerifyCSharpDiagnostic( code.Code );
+		}
+
 		protected override CodeFixProvider GetCSharpCodeFixProvider()
 		{
 			return new LineCodeFixProvider();

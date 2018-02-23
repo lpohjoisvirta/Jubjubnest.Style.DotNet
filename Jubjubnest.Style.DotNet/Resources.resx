@@ -468,4 +468,10 @@
   <data name="BaseConstructorCallSameLine_Title" xml:space="preserve">
     <value>Base constructor call should be on the same line as the last closing brace of the parameter list if the parameters are on their own lines. Otherwise it should be on its own line.</value>
   </data>
+  <data name="AttributesOnTheirOwnLines_Message" xml:space="preserve">
+    <value>Move attributes to the same line or their own lines.</value>
+  </data>
+  <data name="AttributesOnTheirOwnLines_Title" xml:space="preserve">
+    <value>All attributes should be either on the same line or each on their own.</value>
+  </data>
 </root>
